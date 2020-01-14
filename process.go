@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-func process(host string, r io.Reader, w io.Writer) error {
+func (u updater) process(r io.Reader, w io.Writer) error {
 	buf := bufio.NewWriter(w)
 	scanner := bufio.NewScanner(r)
-	if errFind := findAndWrite(scanner, buf); errFind != nil {
+	if errFind := u.findAndWrite(scanner, buf); errFind != nil {
 		return errFind
 	}
-	if errWrite := writeUpdate(buf, host); errWrite != nil {
+	if errWrite := u.writeUpdate(buf); errWrite != nil {
 		return errWrite
 	}
 	if errWrite := restWrite(scanner, r, buf); errWrite != nil {
@@ -22,12 +22,12 @@ func process(host string, r io.Reader, w io.Writer) error {
 	return buf.Flush()
 }
 
-func findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
+func (u updater) findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
 	for scanner.Scan() {
 		text := scanner.Text()
 		if strings.HasPrefix(text, "host") {
 			slice := strings.Fields(text)
-			if len(slice) > 1 && slice[1] == "master" {
+			if len(slice) > 1 && slice[1] == u.name {
 				return scanner.Err()
 			}
 		}
@@ -41,10 +41,10 @@ func findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
 	return scanner.Err()
 }
 
-func writeUpdate(w *bufio.Writer, host string) error {
+func (u updater) writeUpdate(w *bufio.Writer) error {
 	errWriter := NewErrorWriter(w)
-	errWriter.WriteString(fmt.Sprintf("host %s\n", name))
-	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", host))
+	errWriter.WriteString(fmt.Sprintf("host %s\n", u.name))
+	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", u.hostname))
 	errWriter.WriteString("\tIdentityFile file\n")
 	errWriter.WriteString("\tUser ubuntu\n")
 	return errWriter.Err()

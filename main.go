@@ -5,24 +5,35 @@ import (
 	"io"
 	"log"
 	"os"
+	pth "path"
 )
 
-var name = "master"
-var config = "config"
-var backup = "config.backup"
-
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("need hostname")
+	if len(os.Args) < 4 {
+		log.Fatal("need path name host")
 	}
-	if err := runOrRestore(os.Args[1]); err != nil {
+	path := os.Args[1]
+	name := os.Args[2]
+	host := os.Args[3]
+	config := pth.Join(path, "config")
+	backup := pth.Join(path, "config.backup")
+	u := updater{name, host, config, backup}
+	if err := u.runOrRestore(); err != nil {
 		log.Fatal(err)
 	}
+	u.dump()
 }
 
-func runOrRestore(hostname string) error {
-	if errRun := run(hostname); errRun != nil {
-		if errRestore := restoreBackup(); errRestore != nil {
+type updater struct {
+	name     string
+	hostname string
+	config   string
+	backup   string
+}
+
+func (u updater) runOrRestore() error {
+	if errRun := u.run(); errRun != nil {
+		if errRestore := u.restoreBackup(); errRestore != nil {
 			fmt.Fprintln(os.Stderr, errRestore)
 		}
 		return errRun
@@ -30,18 +41,18 @@ func runOrRestore(hostname string) error {
 	return nil
 }
 
-func run(hostname string) error {
-	r, errBackup := makeBackup()
+func (u updater) run() error {
+	r, errBackup := u.makeBackup()
 	if errBackup != nil {
 		return errBackup
 	}
 	defer close(r)
-	w, errConfig := os.Create(config)
+	w, errConfig := os.Create(u.config)
 	if errConfig != nil {
 		return errConfig
 	}
 	defer close(w)
-	return process(hostname, r, w)
+	return u.process(r, w)
 }
 
 func close(file io.Closer) {
@@ -49,4 +60,13 @@ func close(file io.Closer) {
 	if errClose != nil {
 		fmt.Fprintln(os.Stderr, errClose)
 	}
+}
+
+func (u updater) dump() {
+	file, errOpen := os.Open(u.config)
+	if errOpen != nil {
+		return
+	}
+	defer file.Close()
+	io.Copy(os.Stdout, file)
 }
