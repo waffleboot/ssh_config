@@ -9,15 +9,17 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		log.Fatal("need path name host")
+	if len(os.Args) < 6 {
+		log.Fatal("need path name host user identity")
 	}
 	u := updater{}
 	path := os.Args[1]
 	u.name = os.Args[2]
 	u.host = os.Args[3]
+	u.user = os.Args[4]
 	u.config = pth.Join(path, "config")
 	u.backup = pth.Join(path, "config.backup")
+	u.identity = os.Args[5]
 	if err := u.runOrRestore(); err != nil {
 		log.Fatal(err)
 	}
@@ -25,10 +27,12 @@ func main() {
 }
 
 type updater struct {
-	name   string
-	host   string
-	config string
-	backup string
+	user     string
+	name     string
+	host     string
+	config   string
+	backup   string
+	identity string
 }
 
 func (u updater) runOrRestore() error {

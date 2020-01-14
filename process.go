@@ -45,8 +45,8 @@ func (u updater) writeUpdate(w *bufio.Writer) error {
 	errWriter := NewErrorWriter(w)
 	errWriter.WriteString(fmt.Sprintf("host %s\n", u.name))
 	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", u.host))
-	errWriter.WriteString("\tIdentityFile file\n")
-	errWriter.WriteString("\tUser ubuntu\n")
+	errWriter.WriteString(fmt.Sprintf("\tIdentityFile %s\n", u.identity))
+	errWriter.WriteString(fmt.Sprintf("\tUser %v\n", u.user))
 	return errWriter.Err()
 }
 
