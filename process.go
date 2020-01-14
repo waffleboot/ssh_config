@@ -44,7 +44,7 @@ func (u updater) findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
 func (u updater) writeUpdate(w *bufio.Writer) error {
 	errWriter := NewErrorWriter(w)
 	errWriter.WriteString(fmt.Sprintf("host %s\n", u.name))
-	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", u.hostname))
+	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", u.host))
 	errWriter.WriteString("\tIdentityFile file\n")
 	errWriter.WriteString("\tUser ubuntu\n")
 	return errWriter.Err()

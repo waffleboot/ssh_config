@@ -12,12 +12,12 @@ func main() {
 	if len(os.Args) < 4 {
 		log.Fatal("need path name host")
 	}
+	u := updater{}
 	path := os.Args[1]
-	name := os.Args[2]
-	host := os.Args[3]
-	config := pth.Join(path, "config")
-	backup := pth.Join(path, "config.backup")
-	u := updater{name, host, config, backup}
+	u.name = os.Args[2]
+	u.host = os.Args[3]
+	u.config = pth.Join(path, "config")
+	u.backup = pth.Join(path, "config.backup")
 	if err := u.runOrRestore(); err != nil {
 		log.Fatal(err)
 	}
@@ -25,16 +25,17 @@ func main() {
 }
 
 type updater struct {
-	name     string
-	hostname string
-	config   string
-	backup   string
+	name   string
+	host   string
+	config string
+	backup string
 }
 
 func (u updater) runOrRestore() error {
 	if errRun := u.run(); errRun != nil {
 		if errRestore := u.restoreBackup(); errRestore != nil {
-			fmt.Fprintln(os.Stderr, errRestore)
+			fmt.Fprintln(os.Stderr, errRun)
+			return errRestore
 		}
 		return errRun
 	}
