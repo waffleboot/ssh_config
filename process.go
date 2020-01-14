@@ -46,6 +46,7 @@ func (u updater) writeUpdate(w *bufio.Writer) error {
 	errWriter.WriteString(fmt.Sprintf("host %s\n", u.name))
 	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", u.host))
 	errWriter.WriteString(fmt.Sprintf("\tIdentityFile %s\n", u.identity))
+	errWriter.WriteString("\tStrictHostKeyChecking no\n")
 	errWriter.WriteString(fmt.Sprintf("\tUser %v\n", u.user))
 	return errWriter.Err()
 }
