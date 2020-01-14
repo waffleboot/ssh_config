@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"strings"
+	t "text/template"
 )
 
 func (u updater) process(r io.Reader, w io.Writer) error {
@@ -27,7 +27,7 @@ func (u updater) findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
 		text := scanner.Text()
 		if strings.HasPrefix(text, "host") {
 			slice := strings.Fields(text)
-			if len(slice) > 1 && slice[1] == u.name {
+			if len(slice) > 1 && slice[1] == u.Name {
 				return scanner.Err()
 			}
 		}
@@ -41,14 +41,19 @@ func (u updater) findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
 	return scanner.Err()
 }
 
+const template = `host {{ .Name }}
+	HostName {{ .Host }}
+	IdentityFile {{ .Identity }}
+	StrictHostKeyChecking no
+	User {{ .User }}
+`
+
 func (u updater) writeUpdate(w *bufio.Writer) error {
-	errWriter := NewErrorWriter(w)
-	errWriter.WriteString(fmt.Sprintf("host %s\n", u.name))
-	errWriter.WriteString(fmt.Sprintf("\tHostName %s\n", u.host))
-	errWriter.WriteString(fmt.Sprintf("\tIdentityFile %s\n", u.identity))
-	errWriter.WriteString("\tStrictHostKeyChecking no\n")
-	errWriter.WriteString(fmt.Sprintf("\tUser %v\n", u.user))
-	return errWriter.Err()
+	tpl, tplError := t.New("update").Parse(template)
+	if tplError != nil {
+		return tplError
+	}
+	return tpl.Execute(w, u)
 }
 
 func writeWithNewLine(s string, w *bufio.Writer) error {

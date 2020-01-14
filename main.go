@@ -12,27 +12,32 @@ func main() {
 	if len(os.Args) < 6 {
 		log.Fatal("need path name host user identity")
 	}
-	u := updater{}
-	path := os.Args[1]
-	u.name = os.Args[2]
-	u.host = os.Args[3]
-	u.user = os.Args[4]
-	u.config = pth.Join(path, "config")
-	u.backup = pth.Join(path, "config.backup")
-	u.identity = os.Args[5]
+	u := newUpdater()
 	if err := u.runOrRestore(); err != nil {
 		log.Fatal(err)
 	}
 	u.dump()
 }
 
+func newUpdater() updater {
+	u := updater{}
+	path := os.Args[1]
+	u.Name = os.Args[2]
+	u.Host = os.Args[3]
+	u.User = os.Args[4]
+	u.config = pth.Join(path, "config")
+	u.backup = pth.Join(path, "config.backup")
+	u.Identity = os.Args[5]
+	return u
+}
+
 type updater struct {
-	user     string
-	name     string
-	host     string
+	User     string
+	Name     string
+	Host     string
 	config   string
 	backup   string
-	identity string
+	Identity string
 }
 
 func (u updater) runOrRestore() error {
