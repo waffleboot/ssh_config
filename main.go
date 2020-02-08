@@ -10,7 +10,8 @@ import (
 
 func main() {
 	if len(os.Args) < 6 {
-		log.Fatal("need path name host user identity")
+		fmt.Println("usage: <.ssh-dir> <name> <host> <user> <identity file>")
+		os.Exit(1)
 	}
 	u := newUpdater()
 	if err := u.runOrRestore(); err != nil {
