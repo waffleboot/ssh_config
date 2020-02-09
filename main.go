@@ -8,18 +8,6 @@ import (
 	pth "path"
 )
 
-func main() {
-	if len(os.Args) < 6 {
-		fmt.Println("usage: <.ssh-dir> <name> <host> <user> <identity file>")
-		os.Exit(1)
-	}
-	u := newUpdater()
-	if err := u.runOrRestore(); err != nil {
-		log.Fatal(err)
-	}
-	u.dump()
-}
-
 func newUpdater() updater {
 	u := updater{}
 	path := os.Args[1]
@@ -80,4 +68,16 @@ func (u updater) dump() {
 	}
 	defer file.Close()
 	io.Copy(os.Stdout, file)
+}
+
+func main() {
+	if len(os.Args) < 6 {
+		fmt.Println("usage: <.ssh-dir> <name> <host> <user> <identity file>")
+		os.Exit(1)
+	}
+	u := newUpdater()
+	if err := u.runOrRestore(); err != nil {
+		log.Fatal(err)
+	}
+	u.dump()
 }
