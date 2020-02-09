@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	pth "path"
 )
@@ -80,7 +79,8 @@ func main() {
 	}
 	u := newUpdater()
 	if err := u.update(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(2)
 	}
 	u.printSSHConfig(os.Stdout)
 }

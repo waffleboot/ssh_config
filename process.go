@@ -38,7 +38,7 @@ func (u updater) findServerName(sourceScanner *bufio.Scanner, w *bufio.Writer) e
 	return sourceScanner.Err()
 }
 
-const template = `host {{ .Name }}
+const template = `host {{ .ServerName }}
 	HostName {{ .Host }}
 	IdentityFile {{ .Identity }}
 	StrictHostKeyChecking no
