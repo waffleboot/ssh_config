@@ -50,7 +50,7 @@ func (u updater) tryUpdate() error {
 		return errConfig
 	}
 	defer close(dst)
-	return u.copyWithUpdate(src, dst)
+	return u.copyConfigWithUpdate(src, dst)
 }
 
 func close(file io.Closer) {
