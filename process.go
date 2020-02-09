@@ -9,36 +9,33 @@ import (
 
 func (u updater) process(r io.Reader, w io.Writer) error {
 	buf := bufio.NewWriter(w)
-	scanner := bufio.NewScanner(r)
-	if errFind := u.findAndWrite(scanner, buf); errFind != nil {
+	sourceScanner := bufio.NewScanner(r)
+	if errFind := u.findServerName(sourceScanner, buf); errFind != nil {
 		return errFind
 	}
-	if errWrite := u.writeUpdate(buf); errWrite != nil {
+	if errWrite := u.updateServerConfig(buf); errWrite != nil {
 		return errWrite
 	}
-	if errWrite := restWrite(scanner, r, buf); errWrite != nil {
+	if errWrite := restWrite(sourceScanner, buf); errWrite != nil {
 		return errWrite
 	}
 	return buf.Flush()
 }
 
-func (u updater) findAndWrite(scanner *bufio.Scanner, w *bufio.Writer) error {
-	for scanner.Scan() {
-		text := scanner.Text()
-		if strings.HasPrefix(text, "host") {
-			slice := strings.Fields(text)
-			if len(slice) > 1 && slice[1] == u.Name {
-				return scanner.Err()
+func (u updater) findServerName(sourceScanner *bufio.Scanner, w *bufio.Writer) error {
+	for sourceScanner.Scan() {
+		textLine := sourceScanner.Text()
+		if strings.HasPrefix(textLine, "host") {
+			hostName := strings.Fields(textLine)
+			if len(hostName) > 1 && hostName[1] == u.ServerName {
+				return nil
 			}
 		}
-		if _, errWrite := w.WriteString(text); errWrite != nil {
-			return errWrite
-		}
-		if _, errWrite := w.WriteRune('\n'); errWrite != nil {
+		if errWrite := writeWithNewLine(textLine, w); errWrite != nil {
 			return errWrite
 		}
 	}
-	return scanner.Err()
+	return sourceScanner.Err()
 }
 
 const template = `host {{ .Name }}
@@ -48,7 +45,7 @@ const template = `host {{ .Name }}
 	User {{ .User }}
 `
 
-func (u updater) writeUpdate(w *bufio.Writer) error {
+func (u updater) updateServerConfig(w *bufio.Writer) error {
 	tpl, tplError := t.New("update").Parse(template)
 	if tplError != nil {
 		return tplError
@@ -66,20 +63,20 @@ func writeWithNewLine(s string, w *bufio.Writer) error {
 	return nil
 }
 
-func restWrite(scanner *bufio.Scanner, r io.Reader, w *bufio.Writer) error {
-	for scanner.Scan() {
-		text := scanner.Text()
-		if strings.HasPrefix(text, "host") {
-			if errWrite := writeWithNewLine(text, w); errWrite != nil {
+func restWrite(sourceScanner *bufio.Scanner, w *bufio.Writer) error {
+	for sourceScanner.Scan() {
+		textLine := sourceScanner.Text()
+		if strings.HasPrefix(textLine, "host") {
+			if errWrite := writeWithNewLine(textLine, w); errWrite != nil {
 				return errWrite
 			}
 			break
 		}
 	}
-	for scanner.Scan() {
-		if errWrite := writeWithNewLine(scanner.Text(), w); errWrite != nil {
+	for sourceScanner.Scan() {
+		if errWrite := writeWithNewLine(sourceScanner.Text(), w); errWrite != nil {
 			return errWrite
 		}
 	}
-	return scanner.Err()
+	return sourceScanner.Err()
 }

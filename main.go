@@ -11,7 +11,7 @@ import (
 func newUpdater() updater {
 	u := updater{}
 	dir := os.Args[1]
-	u.Name = os.Args[2]
+	u.ServerName = os.Args[2]
 	u.Host = os.Args[3]
 	u.User = os.Args[4]
 	u.configFileName = pth.Join(dir, "config")
@@ -22,7 +22,7 @@ func newUpdater() updater {
 
 type updater struct {
 	User           string
-	Name           string
+	ServerName     string
 	Host           string
 	configFileName string
 	backupFileName string

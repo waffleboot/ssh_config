@@ -8,15 +8,15 @@ import (
 )
 
 func (u updater) makeBackup() (io.ReadCloser, error) {
-	errRename := os.Rename(u.config, u.backup)
+	errRename := os.Rename(u.configFileName, u.backupFileName)
 	if errRename != nil {
-		_, errStat := os.Stat(u.backup)
+		_, errStat := os.Stat(u.backupFileName)
 		if errStat != nil {
 			return ioutil.NopCloser(bytes.NewReader(nil)), nil
 			// return nil, fmt.Errorf("files not found: ['%s','%s']", config, backup)
 		}
 	}
-	file, errOpen := os.Open(u.backup)
+	file, errOpen := os.Open(u.backupFileName)
 	if errOpen != nil {
 		return nil, errOpen
 	}
@@ -24,5 +24,5 @@ func (u updater) makeBackup() (io.ReadCloser, error) {
 }
 
 func (u updater) restoreBackup() error {
-	return os.Rename(u.backup, u.config)
+	return os.Rename(u.backupFileName, u.configFileName)
 }
