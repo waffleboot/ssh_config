@@ -39,7 +39,7 @@ func (u updater) findServerName(sourceScanner *bufio.Scanner, w *bufio.Writer) e
 }
 
 const template = `host {{ .ServerName }}
-	HostName {{ .Host }}
+{{if ne .Host "" }}{{printf "\tHostName %s" .Host }}{{else}}{{"\t# HostName"}}{{end}}
 	IdentityFile {{ .Identity }}
 	StrictHostKeyChecking no
 	User {{ .User }}
