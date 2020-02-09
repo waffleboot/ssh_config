@@ -61,13 +61,14 @@ func close(file io.Closer) {
 	}
 }
 
-func (u updater) dump() {
+func (u updater) printSSHConfig(out io.Writer) error {
 	file, errOpen := os.Open(u.config)
 	if errOpen != nil {
-		return
+		return errOpen
 	}
 	defer file.Close()
-	io.Copy(os.Stdout, file)
+	_, errCopy := io.Copy(out, file)
+	return errCopy
 }
 
 func main() {
@@ -79,5 +80,5 @@ func main() {
 	if err := u.runOrRestore(); err != nil {
 		log.Fatal(err)
 	}
-	u.dump()
+	u.printSSHConfig(os.Stdout)
 }
