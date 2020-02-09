@@ -10,23 +10,23 @@ import (
 
 func newUpdater() updater {
 	u := updater{}
-	path := os.Args[1]
+	dir := os.Args[1]
 	u.Name = os.Args[2]
 	u.Host = os.Args[3]
 	u.User = os.Args[4]
-	u.config = pth.Join(path, "config")
-	u.backup = pth.Join(path, "config.backup")
+	u.configFileName = pth.Join(dir, "config")
+	u.backupFileName = pth.Join(dir, "config.backup")
 	u.Identity = os.Args[5]
 	return u
 }
 
 type updater struct {
-	User     string
-	Name     string
-	Host     string
-	config   string
-	backup   string
-	Identity string
+	User           string
+	Name           string
+	Host           string
+	configFileName string
+	backupFileName string
+	Identity       string
 }
 
 func (u updater) tryUpdate() error {
@@ -46,7 +46,7 @@ func (u updater) run() error {
 		return errBackup
 	}
 	defer close(r)
-	w, errConfig := os.Create(u.config)
+	w, errConfig := os.Create(u.configFileName)
 	if errConfig != nil {
 		return errConfig
 	}
@@ -62,7 +62,7 @@ func close(file io.Closer) {
 }
 
 func (u updater) printSSHConfig(out io.Writer) error {
-	file, errOpen := os.Open(u.config)
+	file, errOpen := os.Open(u.configFileName)
 	if errOpen != nil {
 		return errOpen
 	}
