@@ -29,7 +29,7 @@ type updater struct {
 	Identity string
 }
 
-func (u updater) runOrRestore() error {
+func (u updater) tryUpdate() error {
 	if errRun := u.run(); errRun != nil {
 		if errRestore := u.restoreBackup(); errRestore != nil {
 			fmt.Fprintln(os.Stderr, errRun)
@@ -79,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 	u := newUpdater()
-	if err := u.runOrRestore(); err != nil {
+	if err := u.tryUpdate(); err != nil {
 		log.Fatal(err)
 	}
 	u.printSSHConfig(os.Stdout)
