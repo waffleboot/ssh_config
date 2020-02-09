@@ -14,19 +14,6 @@ func newScanner(src io.Reader) myScanner {
 	return myScanner{bufio.NewScanner(src)}
 }
 
-func (sourceScanner myScanner) find(serverName string, handler func() error, other func(string) error) error {
-	if errFind := sourceScanner.findServerName(serverName, other); errFind != nil {
-		return errFind
-	}
-	if errHandle := handler(); errHandle != nil {
-		return errHandle
-	}
-	if errWrite := sourceScanner.copyRest(other); errWrite != nil {
-		return errWrite
-	}
-	return nil
-}
-
 func (sourceScanner myScanner) findServerName(serverName string, other func(string) error) error {
 	for sourceScanner.Scan() {
 		textLine := sourceScanner.Text()
