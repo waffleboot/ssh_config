@@ -7,9 +7,9 @@ import (
 	t "text/template"
 )
 
-func (u updater) process(r io.Reader, w io.Writer) error {
-	buf := bufio.NewWriter(w)
-	sourceScanner := bufio.NewScanner(r)
+func (u updater) copyWithUpdate(src io.Reader, dst io.Writer) error {
+	buf := bufio.NewWriter(dst)
+	sourceScanner := bufio.NewScanner(src)
 	if errFind := u.findServerName(sourceScanner, buf); errFind != nil {
 		return errFind
 	}

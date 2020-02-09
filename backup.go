@@ -7,12 +7,13 @@ import (
 	"os"
 )
 
-func (u updater) makeBackup() (io.ReadCloser, error) {
+func (u updater) makeBackup() (source io.ReadCloser, err error) {
 	errRename := os.Rename(u.configFileName, u.backupFileName)
 	if errRename != nil {
 		_, errStat := os.Stat(u.backupFileName)
 		if errStat != nil {
-			return ioutil.NopCloser(bytes.NewReader(nil)), nil
+			emptySource := ioutil.NopCloser(bytes.NewReader(nil))
+			return emptySource, nil
 			// return nil, fmt.Errorf("files not found: ['%s','%s']", config, backup)
 		}
 	}

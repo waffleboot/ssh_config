@@ -29,8 +29,8 @@ type updater struct {
 	Identity       string
 }
 
-func (u updater) tryUpdate() error {
-	if errRun := u.run(); errRun != nil {
+func (u updater) update() error {
+	if errRun := u.tryUpdate(); errRun != nil {
 		if errRestore := u.restoreBackup(); errRestore != nil {
 			fmt.Fprintln(os.Stderr, errRun)
 			return errRestore
@@ -40,18 +40,18 @@ func (u updater) tryUpdate() error {
 	return nil
 }
 
-func (u updater) run() error {
-	r, errBackup := u.makeBackup()
+func (u updater) tryUpdate() error {
+	src, errBackup := u.makeBackup()
 	if errBackup != nil {
 		return errBackup
 	}
-	defer close(r)
-	w, errConfig := os.Create(u.configFileName)
+	defer close(src)
+	dst, errConfig := os.Create(u.configFileName)
 	if errConfig != nil {
 		return errConfig
 	}
-	defer close(w)
-	return u.process(r, w)
+	defer close(dst)
+	return u.copyWithUpdate(src, dst)
 }
 
 func close(file io.Closer) {
@@ -79,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 	u := newUpdater()
-	if err := u.tryUpdate(); err != nil {
+	if err := u.update(); err != nil {
 		log.Fatal(err)
 	}
 	u.printSSHConfig(os.Stdout)
