@@ -71,9 +71,11 @@ func (u updater) printSSHConfig(out io.Writer) error {
 	return errCopy
 }
 
+const usage = "usage: <.ssh-dir> <name> <host> <user> <identity file>"
+
 func main() {
 	if len(os.Args) < 6 {
-		fmt.Println("usage: <.ssh-dir> <name> <host> <user> <identity file>")
+		fmt.Println(usage)
 		os.Exit(1)
 	}
 	u := newUpdater()
