@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"io"
 	"os"
-	pth "path"
+	"path"
 )
 
-func newUpdater() updater {
+func newUpdater(args []string) updater {
 	u := updater{}
-	dir := os.Args[1]
-	u.ServerName = os.Args[2]
-	u.Host = os.Args[3]
-	u.User = os.Args[4]
-	u.configFileName = pth.Join(dir, "config")
-	u.backupFileName = pth.Join(dir, "config.backup")
-	u.Identity = os.Args[5]
+	dir := args[1]
+	u.ServerName = args[2]
+	u.Host = args[3]
+	u.User = args[4]
+	u.configFileName = path.Join(dir, "config")
+	u.backupFileName = path.Join(dir, "config.backup")
+	u.Identity = args[5]
 	return u
 }
 
@@ -23,18 +23,18 @@ type updater struct {
 	User           string
 	ServerName     string
 	Host           string
+	Identity       string
 	configFileName string
 	backupFileName string
-	Identity       string
 }
 
 func (u updater) update() error {
-	if errRun := u.tryUpdate(); errRun != nil {
+	if errUpdate := u.tryUpdate(); errUpdate != nil {
 		if errRestore := u.restoreBackup(); errRestore != nil {
-			fmt.Fprintln(os.Stderr, errRun)
+			fmt.Fprintln(os.Stderr, errUpdate)
 			return errRestore
 		}
-		return errRun
+		return errUpdate
 	}
 	return nil
 }
@@ -70,14 +70,14 @@ func (u updater) printSSHConfig(out io.Writer) error {
 	return errCopy
 }
 
-const usage = "usage: <.ssh-dir> <name> <host> <user> <identity file>"
+const usage = "usage: <.ssh-dir> <server-name> <hostname> <ssh-user> <identity file>"
 
 func main() {
 	if len(os.Args) < 6 {
 		fmt.Println(usage)
 		os.Exit(1)
 	}
-	u := newUpdater()
+	u := newUpdater(os.Args)
 	if err := u.update(); err != nil {
 		fmt.Println(err)
 		os.Exit(2)

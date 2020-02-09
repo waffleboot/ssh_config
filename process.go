@@ -10,24 +10,24 @@ import (
 func (u updater) copyWithUpdate(src io.Reader, dst io.Writer) error {
 	buf := bufio.NewWriter(dst)
 	sourceScanner := bufio.NewScanner(src)
-	if errFind := u.findServerName(sourceScanner, buf); errFind != nil {
+	if errFind := findServerName(sourceScanner, buf, u.ServerName); errFind != nil {
 		return errFind
 	}
-	if errWrite := u.updateServerConfig(buf); errWrite != nil {
+	if errWrite := updateServerConfig(buf, u); errWrite != nil {
 		return errWrite
 	}
-	if errWrite := restWrite(sourceScanner, buf); errWrite != nil {
+	if errWrite := copyRest(sourceScanner, buf); errWrite != nil {
 		return errWrite
 	}
 	return buf.Flush()
 }
 
-func (u updater) findServerName(sourceScanner *bufio.Scanner, w *bufio.Writer) error {
+func findServerName(sourceScanner *bufio.Scanner, w *bufio.Writer, serverName string) error {
 	for sourceScanner.Scan() {
 		textLine := sourceScanner.Text()
 		if strings.HasPrefix(textLine, "host") {
 			hostName := strings.Fields(textLine)
-			if len(hostName) > 1 && hostName[1] == u.ServerName {
+			if len(hostName) > 1 && hostName[1] == serverName {
 				return nil
 			}
 		}
@@ -45,7 +45,7 @@ const template = `host {{ .ServerName }}
 	User {{ .User }}
 `
 
-func (u updater) updateServerConfig(w *bufio.Writer) error {
+func updateServerConfig(w *bufio.Writer, u updater) error {
 	tpl, tplError := t.New("update").Parse(template)
 	if tplError != nil {
 		return tplError
@@ -63,7 +63,7 @@ func writeWithNewLine(s string, w *bufio.Writer) error {
 	return nil
 }
 
-func restWrite(sourceScanner *bufio.Scanner, w *bufio.Writer) error {
+func copyRest(sourceScanner *bufio.Scanner, w *bufio.Writer) error {
 	for sourceScanner.Scan() {
 		textLine := sourceScanner.Text()
 		if strings.HasPrefix(textLine, "host") {
